@@ -59,17 +59,39 @@ SessionLock uses **Gaussian Distribution (Z-Score) Anomaly Detection** instead o
 
 This approach is mathematically robust and adapts to each user's unique interaction patterns.
 
+## Evaluation Results
+
+We evaluated both engines against a **500-session synthetic dataset** (200 normal users, 200 clear attacks, 100 borderline impostors).
+
+| Metric | Classic (Rules) | ML (Z-Score) | Improvement |
+|---|---|---|---|
+| **Accuracy** | 88.8% | **93.8%** | +5.0% |
+| **Precision** | 100.0% | **100.0%** | — |
+| **Recall** | 81.3% | **89.7%** | +8.4% |
+| **F1 Score** | 89.7% | **94.6%** | +4.9% |
+
+The ML engine catches **25 more attacks** than the classic engine (269 vs 244 true positives), especially subtle/borderline impostors, while maintaining **zero false positives** on legitimate users.
+
+Reproduce these results yourself:
+```bash
+dart run bin/evaluate.dart
+```
+
 ## Repository Structure
 ```
 lib/
 ├── behavior/
-│   └── behavior_collector.dart   // Collects interaction events
+│   └── behavior_collector.dart      // Collects interaction events
+├── evaluation/
+│   └── evaluation.dart              // Synthetic data generator & metrics
 ├── risk/
-│   ├── risk_engine.dart          // Core risk evaluation logic & data models
-│   ├── ml_risk_engine.dart       // ML-based Z-Score anomaly detection engine
-│   ├── risk_result.dart          // Risk levels & explanations
-│   └── baseline_profile.dart     // User baseline profiles with std deviations
-└── main.dart                     // Demo app wiring behavior → risk
+│   ├── risk_engine.dart             // Core risk evaluation logic & data models
+│   ├── ml_risk_engine.dart          // ML-based Z-Score anomaly detection engine
+│   ├── risk_result.dart             // Risk levels & explanations
+│   └── baseline_profile.dart        // User baseline profiles with std deviations
+└── main.dart                        // Demo app wiring behavior → risk
+bin/
+└── evaluate.dart                    // Runs evaluation & prints comparison report
 ```
 
 ## Scope Disclaimer
