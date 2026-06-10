@@ -4,14 +4,17 @@ import 'dart:math';
 
 import 'behavior/behavior_collector.dart';
 import 'risk/risk_engine.dart';
+import 'risk/ml_risk_engine.dart';
 
 final BehaviorCollector behaviorCollector = BehaviorCollector();
-final RiskEngine riskEngine = RiskEngine();
+final RiskEngine riskEngine = MLRiskEngine();
 
 // Demo baseline (same as your original)
 final UserBaseline demoBaseline = UserBaseline(
   avgTypingSpeed: 4.0,
+  typingSpeedStdDev: 0.5, // 0.5 KPS variance normally
   avgTapDuration: 120,
+  tapDurationStdDev: 15.0, // 15ms standard deviation normal
   commonFirstScreen: 'home',
 );
 
@@ -216,7 +219,7 @@ class _BehaviorDemoScreenState extends State<BehaviorDemoScreen> {
     return Column(
       children: [
         Expanded(child: _buildMainPanel()),
-        Container(height: 200, child: _buildEventLog()),
+        SizedBox(height: 200, child: _buildEventLog()),
       ],
     );
   }

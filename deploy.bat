@@ -1,6 +1,6 @@
 @echo off
 REM ============================================================
-REM  BankGuard AI (SessionLock) - Easy Deploy (CMD)
+REM  SessionLock (SessionLock) - Easy Deploy (CMD)
 REM  Usage:  deploy.bat [apk|aab|web|windows|all|clean|doctor]
 REM ============================================================
 
@@ -86,7 +86,7 @@ goto :eof
 
 :help
 echo.
-echo  BankGuard AI - Deployment Script
+echo  SessionLock - Deployment Script
 echo  ================================
 echo  Usage:  deploy.bat ^<target^>
 echo.

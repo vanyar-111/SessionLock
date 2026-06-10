@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    BankGuard AI (SessionLock) - Easy Deployment Script
+    SessionLock (SessionLock) - Easy Deployment Script
 .DESCRIPTION
     Build and deploy the Flutter app for Android (APK/AAB), Web, or Windows.
     Run from the project root directory.
@@ -24,7 +24,7 @@ param(
 $ProjectRoot  = $PSScriptRoot
 $BuildOutput  = Join-Path $ProjectRoot "build"
 $DeployDir    = Join-Path $ProjectRoot "deploy_output"
-$AppName      = "BankGuard AI"
+$AppName      = "SessionLock"
 $Timestamp    = Get-Date -Format "yyyyMMdd_HHmmss"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -88,7 +88,7 @@ function Build-APK {
 
     Ensure-DeployDir
     $src = Join-Path $BuildOutput "app\outputs\flutter-apk\app-release.apk"
-    $dst = Join-Path $DeployDir "bankguard_ai_$Timestamp.apk"
+    $dst = Join-Path $DeployDir "sessionlock_$Timestamp.apk"
     if (Test-Path $src) {
         Copy-Item $src $dst -Force
         Write-Success "APK copied to: $dst"
@@ -107,7 +107,7 @@ function Build-AAB {
 
     Ensure-DeployDir
     $src = Join-Path $BuildOutput "app\outputs\bundle\release\app-release.aab"
-    $dst = Join-Path $DeployDir "bankguard_ai_$Timestamp.aab"
+    $dst = Join-Path $DeployDir "sessionlock_$Timestamp.aab"
     if (Test-Path $src) {
         Copy-Item $src $dst -Force
         Write-Success "AAB copied to: $dst"
@@ -155,7 +155,7 @@ function Build-Windows {
     if (Test-Path $src) {
         Copy-Item $src $dst -Recurse -Force
         Write-Success "Windows build copied to: $dst"
-        Write-Host "  Run it:  $dst\bankguard_ai.exe" -ForegroundColor Gray
+        Write-Host "  Run it:  $dst\sessionlock.exe" -ForegroundColor Gray
     } else {
         Write-Success "Build complete. Check: $BuildOutput\windows\"
     }

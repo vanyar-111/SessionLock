@@ -1,4 +1,4 @@
-name: bankguard_ai
+name: sessionlock
 description: Behavior-based continuous authentication prototype
 publish_to: 'none'
 

@@ -1,4 +1,4 @@
-package com.example.bankguard_ai
+package com.example.sessionlock
 
 import io.flutter.embedding.android.FlutterActivity
 

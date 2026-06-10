@@ -2,12 +2,16 @@ enum RiskLevel { low, medium, high }
 
 class UserBaseline {
   final double avgTypingSpeed;
+  final double typingSpeedStdDev;
   final double avgTapDuration;
+  final double tapDurationStdDev;
   final String commonFirstScreen;
 
   const UserBaseline({
     required this.avgTypingSpeed,
+    required this.typingSpeedStdDev,
     required this.avgTapDuration,
+    required this.tapDurationStdDev,
     required this.commonFirstScreen,
   });
 }

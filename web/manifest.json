@@ -1,6 +1,6 @@
 {
-    "name": "bankguard_ai",
-    "short_name": "bankguard_ai",
+    "name": "sessionlock",
+    "short_name": "sessionlock",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
