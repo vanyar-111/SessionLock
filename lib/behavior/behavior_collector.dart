@@ -1,17 +1,33 @@
 // lib/behavior/behavior_collector.dart
-import '../risk/risk_engine.dart';
+
+class BehaviorWindow {
+  final num typingSpeedKps; // keys per second
+  final double typingVariance;
+  final double avgTapDurationMs;
+  final int eventCount;
+
+  const BehaviorWindow({
+    required this.typingSpeedKps,
+    required this.typingVariance,
+    required this.avgTapDurationMs,
+    required this.eventCount,
+  });
+}
 
 class BehaviorCollector {
-  final RiskEngine _riskEngine = RiskEngine();
-  // --- Internal state (this is "state vs events") ---
-  int _keyPressCount = 0;
+  // --- Configuration ---
+  static const int windowSeconds = 10;
+
+  // --- Internal state ---
+  final List<int> _keyIntervalsMs = [];
   int _tapCount = 0;
   int _totalTapDurationMs = 0;
   int _eventCount = 0;
   DateTime _windowStart = DateTime.now();
+
   // --- Called when user types ---
   void recordKeyPress({required int timeBetweenKeysMs}) {
-    _keyPressCount++;
+    _keyIntervalsMs.add(timeBetweenKeysMs);
     _eventCount++;
   }
 
@@ -22,31 +38,47 @@ class BehaviorCollector {
     _eventCount++;
   }
 
-  // --- Called on screen change ---
-  RiskResult evaluateIfNeeded({required String currentScreen}) {
+  /// Returns a BehaviorWindow every [windowSeconds], otherwise null
+  BehaviorWindow? collectWindowIfReady() {
     final now = DateTime.now();
-    final windowDuration = now.difference(_windowStart).inSeconds;
-    // Evaluate every 10 seconds
-    if (windowDuration < 10) {
-      return RiskResult(level: RiskLevel.low, score: 0, reasons: const []);
-    }
+    final elapsed = now.difference(_windowStart).inSeconds;
+
+    if (elapsed < windowSeconds) return null;
+
+    final typingSpeedKps = _keyIntervalsMs.isEmpty
+        ? 0
+        : _keyIntervalsMs.length / elapsed;
+
+    final variance = _calculateVariance(_keyIntervalsMs);
+
     final avgTapDuration = _tapCount == 0 ? 0 : _totalTapDurationMs / _tapCount;
-    final features = BehaviorFeatures(
-      avgTypingSpeed: _keyPressCount == 0
-          ? 0
-          : windowDuration * 1000 / _keyPressCount,
-      typingVariance: 1.0, // fake for v1
-      avgTapDuration: avgTapDuration.toDouble(),
-      eventsPerWindow: _eventCount,
-      firstScreenAfterLogin: currentScreen,
+
+    final snapshot = BehaviorWindow(
+      typingSpeedKps: typingSpeedKps,
+      typingVariance: variance,
+      avgTapDurationMs: avgTapDuration.toDouble(),
+      eventCount: _eventCount,
     );
-    // Reset window
+
     _resetWindow();
-    return _riskEngine.evaluate(features);
+    return snapshot;
+  }
+
+  // --- Helpers ---
+  double _calculateVariance(List<int> values) {
+    if (values.length < 2) return 0;
+
+    final mean = values.reduce((a, b) => a + b) / values.length;
+
+    final squaredDiffs = values
+        .map((v) => (v - mean) * (v - mean))
+        .reduce((a, b) => a + b);
+
+    return squaredDiffs / values.length;
   }
 
   void _resetWindow() {
-    _keyPressCount = 0;
+    _keyIntervalsMs.clear();
     _tapCount = 0;
     _totalTapDurationMs = 0;
     _eventCount = 0;

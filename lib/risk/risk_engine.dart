@@ -1,5 +1,16 @@
-//lib/risk/risk_engine.dart
 enum RiskLevel { low, medium, high }
+
+class UserBaseline {
+  final double avgTypingSpeed;
+  final double avgTapDuration;
+  final String commonFirstScreen;
+
+  const UserBaseline({
+    required this.avgTypingSpeed,
+    required this.avgTapDuration,
+    required this.commonFirstScreen,
+  });
+}
 
 class BehaviorFeatures {
   final double avgTypingSpeed;
@@ -7,6 +18,7 @@ class BehaviorFeatures {
   final double avgTapDuration;
   final int eventsPerWindow;
   final String firstScreenAfterLogin;
+
   BehaviorFeatures({
     required this.avgTypingSpeed,
     required this.typingVariance,
@@ -20,46 +32,70 @@ class RiskResult {
   final RiskLevel level;
   final int score;
   final List<String> reasons;
-  RiskResult({required this.level, required this.score, required this.reasons});
+
+  const RiskResult({
+    required this.level,
+    required this.score,
+    required this.reasons,
+  });
 }
 
 class RiskEngine {
-  static const double baselineTypingSpeed = 180;
-  static const double baselineTapDuration = 120;
-  static const String baselineFirstScreen = "home";
-  RiskResult evaluate(BehaviorFeatures features) {
-    int riskScore = 0;
-    final List<String> reasons = [];
-    if (features.avgTypingSpeed > baselineTypingSpeed * 1.6 ||
-        features.avgTypingSpeed < baselineTypingSpeed * 0.6) {
-      riskScore += 2;
-      reasons.add("Typing speed deviates from baseline");
+  RiskResult evaluate({
+    required BehaviorFeatures current,
+    required UserBaseline baseline,
+  }) {
+    int score = 0;
+    final reasons = <String>[];
+
+    // Typing Speed Deviation
+    final typingDeviation = (current.avgTypingSpeed - baseline.avgTypingSpeed)
+        .abs();
+
+    if (typingDeviation > 2) {
+      score += 2;
+      reasons.add("Large typing speed deviation");
+    } else if (typingDeviation > 1) {
+      score += 1;
+      reasons.add("Moderate typing speed deviation");
     }
-    if (features.typingVariance > 2.5) {
-      riskScore += 1;
-      reasons.add("High typing inconsistency");
+
+    // Typing Variance
+    if (current.typingVariance > 2.5) {
+      score += 1;
+      reasons.add("High typing variance");
     }
-    if (features.avgTapDuration > baselineTapDuration * 1.8 ||
-        features.avgTapDuration < baselineTapDuration * 0.5) {
-      riskScore += 1;
-      reasons.add("Abnormal tap duration");
+
+    // Tap Duration Deviation
+    final tapDeviation = (current.avgTapDuration - baseline.avgTapDuration)
+        .abs();
+
+    if (tapDeviation > 80) {
+      score += 2;
+      reasons.add("Large tap duration deviation");
+    } else if (tapDeviation > 40) {
+      score += 1;
+      reasons.add("Moderate tap duration deviation");
     }
-    if (features.eventsPerWindow > 40 || features.eventsPerWindow < 5) {
-      riskScore += 1;
-      reasons.add("Unusual interaction rhythm");
+
+    // Interaction Frequency
+    if (current.eventsPerWindow < 3) {
+      score += 1;
+      reasons.add("Low interaction frequency");
     }
-    if (features.firstScreenAfterLogin != baselineFirstScreen) {
-      riskScore += 2;
-      reasons.add("Unexpected first screen after login");
+
+    // Navigation Anomaly
+    if (current.firstScreenAfterLogin != baseline.commonFirstScreen) {
+      score += 2;
+      reasons.add("Unexpected navigation flow after login");
     }
-    RiskLevel level;
-    if (riskScore >= 4) {
-      level = RiskLevel.high;
-    } else if (riskScore >= 2) {
-      level = RiskLevel.medium;
-    } else {
-      level = RiskLevel.low;
-    }
-    return RiskResult(level: level, score: riskScore, reasons: reasons);
+
+    final RiskLevel level = score >= 5
+        ? RiskLevel.high
+        : score >= 2
+        ? RiskLevel.medium
+        : RiskLevel.low;
+
+    return RiskResult(level: level, score: score, reasons: reasons);
   }
 }
